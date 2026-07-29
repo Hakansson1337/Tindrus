@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tindrus AI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <meta name="theme-color" content="#05070d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Tindrus">
+</head>
+
+<body>
+
+<div class="app">
+
+    <h1>🍓 Tindrus</h1>
+
+    <p class="subtitle">
+        Din smarta, vänliga AI-assistent
+    </p>
+
+
+    <div id="chat">
+
+        <div class="message tindrus">
+            Hej! Jag är Tindrus. Hur kan jag hjälpa dig idag?
+        </div>
+
+    </div>
+
+
+    <div class="input-area">
+
+        <input 
+            id="userInput"
+            type="text"
+            placeholder="Skriv till Tindrus..."
+            onkeypress="if(event.key==='Enter') sendMessage()"
+        >
+
+        <button onclick="sendMessage()">
+            ➤
+        </button>
+
+    </div>
+
+
+    <button class="voice" onclick="startVoice()">
+        🎤 Prata med Tindrus
+    </button>
+
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
