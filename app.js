@@ -1,87 +1,129 @@
 const chat = document.getElementById("chat");
 const input = document.getElementById("userInput");
 
-// Tindrus minne
 let memory = JSON.parse(localStorage.getItem("tindrusMemory")) || [];
+let conversation = JSON.parse(localStorage.getItem("tindrusChat")) || [];
+
 
 function addMessage(text, sender) {
+
     const div = document.createElement("div");
+
     div.className = "message " + sender;
     div.innerText = text;
+
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 }
 
-function saveMemory(text) {
-    memory.push(text);
-    localStorage.setItem("tindrusMemory", JSON.stringify(memory));
+
+function saveChat(role, text) {
+
+    conversation.push({
+        role: role,
+        text: text
+    });
+
+    localStorage.setItem(
+        "tindrusChat",
+        JSON.stringify(conversation)
+    );
 }
 
-function sendMessage() {
+
+function saveMemory(text) {
+
+    memory.push(text);
+
+    localStorage.setItem(
+        "tindrusMemory",
+        JSON.stringify(memory)
+    );
+}
+
+
+async function sendMessage() {
 
     let message = input.value.trim();
 
     if (!message) return;
 
+
     addMessage(message, "user");
+
+    saveChat("user", message);
+
     input.value = "";
 
-    setTimeout(() => {
 
-        let response = tindrusThink(message);
+    let thinking = document.createElement("div");
+
+    thinking.className = "message tindrus";
+    thinking.innerText = "Tindrus tänker...";
+
+    chat.appendChild(thinking);
+
+
+    try {
+
+        // Här kopplar vi in den riktiga AI:n i nästa steg
+        let response = await askTindrus(message);
+
+
+        thinking.remove();
+
 
         addMessage(response, "tindrus");
+
+        saveChat("tindrus", response);
+
         speak(response);
 
-    }, 500);
+
+    } catch(error) {
+
+        thinking.remove();
+
+        addMessage(
+            "Jag kunde inte nå min AI-hjärna just nu. Försök igen.",
+            "tindrus"
+        );
+
+    }
+
 }
 
 
-function tindrusThink(message) {
+
+async function askTindrus(message) {
+
+
+    // Tillfällig hjärna tills vi kopplar AI-servern
 
     let text = message.toLowerCase();
 
 
-    if (text.includes("mitt namn är")) {
+    if(text.includes("vem är du")) {
 
-        let name = message.replace(/.*mitt namn är/i, "").trim();
-
-        saveMemory("Användaren heter " + name);
-
-        return "Trevligt att lära känna dig, " + name + ". Jag kommer ihåg det.";
+        return "Jag är Tindrus, din personliga AI-assistent. Jag är byggd för att hjälpa dig med idéer, problemlösning och skapande.";
 
     }
 
 
-    if (text.includes("kom ihåg")) {
+    if(text.includes("kom ihåg")) {
 
         saveMemory(message);
 
-        return "Jag har sparat det i mitt minne.";
+        return "Jag har sparat det i mitt lokala minne.";
 
     }
 
 
-    if (text.includes("vem är du")) {
-
-        return "Jag är Tindrus, din personliga AI-assistent. Jag är här för att hjälpa dig med idéer, problem och skapande.";
-
-    }
-
-
-    if (text.includes("hjälp")) {
-
-        return "Självklart. Berätta vad du behöver hjälp med så analyserar jag det och hjälper dig hitta en lösning.";
-
-    }
-
-
-    return "Jag förstår. Jag analyserar det och hjälper dig så gott jag kan. Vill du att vi utvecklar idén tillsammans?";
+    return "Jag är redo att hjälpa dig. Min avancerade AI-hjärna håller på att kopplas in.";
 }
 
 
 
-// Röstfunktion
 function speak(text) {
 
     let speech = new SpeechSynthesisUtterance(text);
@@ -94,30 +136,32 @@ function speak(text) {
 }
 
 
-// Röstinmatning
+
 function startVoice() {
 
-    const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+    const Recognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
 
-    if (!SpeechRecognition) {
+    if(!Recognition){
 
-        alert("Röst fungerar inte i denna webbläsare.");
+        alert("Röst stöds inte här.");
 
         return;
 
     }
 
 
-    let recognition = new SpeechRecognition();
+    let recognition = new Recognition();
 
     recognition.lang = "sv-SE";
 
 
-    recognition.onresult = function(event) {
+    recognition.onresult = function(event){
 
-        input.value = event.results[0][0].transcript;
+        input.value =
+        event.results[0][0].transcript;
 
         sendMessage();
 
@@ -127,3 +171,14 @@ function startVoice() {
     recognition.start();
 
 }
+
+
+// Visa tidigare chatt
+conversation.forEach(msg => {
+
+    addMessage(
+        msg.text,
+        msg.role === "user" ? "user" : "tindrus"
+    );
+
+});
